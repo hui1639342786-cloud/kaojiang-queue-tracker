@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidQueueLog(data) {
+      let requiredFields = ['city', 'storeName', 'tableType', 'queueCount', 'uploadTime', 'pageTime', 'collectionDate', 'period'];
+      return data.keys().hasAll(requiredFields)
+        && data.keys().size() == requiredFields.size()
+        && data.city is string && data.city.size() <= 100
+        && data.storeName is string && data.storeName.size() <= 200
+        && data.tableType is string && data.tableType.size() <= 100
+        && data.queueCount is int && data.queueCount >= 0
+        && data.uploadTime is timestamp
+        && data.pageTime is string && data.pageTime.size() <= 100
+        && data.period is string
+        && data.collectionDate is string && data.collectionDate.size() <= 20;
+    }
+
+    // --- Collections ---
+    match /queueLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && isValidId(logId)
+        && isValidQueueLog(incoming())
+        && incoming().uploadTime == request.time;
+      
+      // Allow deletion for cleanup
+      allow delete: if isSignedIn(); 
+    }
+  }
+}

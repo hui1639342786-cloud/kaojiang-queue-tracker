@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "QueueLog": {
+      "title": "Queue Log",
+      "description": "A record of queue data extracted from a screenshot.",
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "City of the store (Beijing, Xi'an, Shanghai)"
+        },
+        "storeName": {
+          "type": "string",
+          "description": "Name of the store"
+        },
+        "tableType": {
+          "type": "string",
+          "description": "Type of table (e.g., Small, Medium, Large)"
+        },
+        "queueCount": {
+          "type": "integer",
+          "description": "Number of tables waiting"
+        },
+        "pageTime": {
+          "type": "string",
+          "description": "Time displayed on the screenshot"
+        },
+        "uploadTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Actual time the file was uploaded"
+        },
+        "collectionDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The date for grouping (usually Monday or Saturday)"
+        }
+      },
+      "required": ["city", "storeName", "tableType", "queueCount", "uploadTime"]
+    }
+  },
+  "firestore": {
+    "queueLogs": {
+      "schema": "QueueLog",
+      "description": "Collection storing all queue monitoring data points."
+    }
+  }
+}
